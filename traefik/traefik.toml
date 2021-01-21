@@ -1,0 +1,35 @@
+defaultEntryPoints = ["http", "https"]
+[api]
+dashboard = true
+insecure = true
+# You can create config files in /var/lib/traefik/traefik.conf and Traefik will automatically reload them
+[providers]
+[providers.file]
+directory = "/etc/traefik/"
+watch = true
+[providers.docker]
+network = "traefik-ext"
+exposedByDefault = false
+[log]
+level = "INFO"
+#[accessLog]
+#filePath = "/etc/traefik/access.log"
+[entryPoints.web]
+address = ":80"
+[entryPoints.web.forwardedHeaders]
+insecure = true
+[entryPoints.web.http]
+[entryPoints.web.http.redirections]
+[entryPoints.web.http.redirections.entryPoint]
+to = "websecure"
+scheme = "https"
+[entryPoints.websecure]
+address = ":443"
+[certificatesResolvers.le.acme]
+email = "email@home.example.com"
+storage = "/etc/letsencrypt/acme.json"
+#caserver = "https://acme-staging-v02.api.letsencrypt.org/directory"
+[certificatesResolvers.le.acme.dnsChallenge]
+provider = "route53"
+#delayBeforeCheck = 30
+

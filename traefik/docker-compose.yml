@@ -1,0 +1,36 @@
+version: "3.3"
+
+secrets:
+  aws_creds:
+    file: "/storage/secrets/aws.creds"
+
+services:
+
+  traefik:
+    image: "traefik:v2.3"
+    container_name: "traefik-docker1"
+    domainname: home.example.com
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    secrets:
+      - "aws_creds"
+    environment:
+      - AWS_SHARED_CREDENTIALS_FILE=/run/secrets/aws_creds
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/storage/docker/traefik/conf/:/etc/traefik/"
+      - "/storage/letsencrypt/:/etc/letsencrypt/"
+    networks:
+      - default
+      - traefik-ext
+    dns:
+      - 10.1.1.1
+
+networks:
+  # Run this first (`docker network create traefik-ext`)
+  traefik-ext:
+    external: true
+

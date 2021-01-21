@@ -1,0 +1,8 @@
+[http.routers.api]
+# TODO: Set your domain here !!!
+rule = "Host(`traefik.home.example.com`)"
+#tls = true
+#rule = "PathPrefix(`/api`) || PathPrefix(`/dashboard`)"
+service = "api@internal"
+[http.routers.api.tls]
+certresolver = "le"

@@ -1,0 +1,26 @@
+version: '3.3'
+
+services:
+  influxdb:
+    image: influxdb
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:8086:8086"
+    volumes:
+      - "/storage/influxdb:/var/lib/influxdb:z"
+    environment:
+      - INFLUXDB_ADMIN_USER=<influxadmin>
+      - INFLUXDB_USER_PASSWORD=<influxpw>
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=Host:influxdb.home.example.com"
+      - "traefik.port=8086"
+      - "traefik.docker.network=traefik-ext"
+      # - "traefik.http.routers.influxdb.tls.certresolver=le"
+    networks:
+      - traefik-ext
+
+networks:
+  traefik-ext:
+    external: true

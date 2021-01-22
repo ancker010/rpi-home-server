@@ -1,0 +1,37 @@
+version: '3.3'
+
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:3000:3000"
+    user: "0"
+    volumes:
+      - '/storage/grafana:/var/lib/grafana'
+      - '/storage/grafana/log:/var/log/grafana'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=<password>
+      # Comment out if you have users that should sign up
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=https://grafana.home.example.com
+      - GF_INSTALL_PLUGINS=natel-discrete-panel 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=Host:grafana.home.example.com"
+      - "traefik.port=3000"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.home.example.com`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana-secure.rule=Host(`grafana.home.example.com`)"
+      - "traefik.http.routers.grafana-secure.entrypoints=websecure"
+      - "traefik.http.routers.grafana-secure.tls=true"
+      - "traefik.http.routers.grafana-secure.tls.certresolver=le"
+      - "traefik.docker.network=traefik-ext"
+    networks:
+      - traefik-ext
+
+networks:
+  traefik-ext:
+    external: true

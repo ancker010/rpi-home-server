@@ -1,0 +1,49 @@
+version: '3.3'
+
+services:
+  pihole:
+    container_name: pihole
+    domainname: home.example.com
+    hostname: pihole.home.example.com
+    image: pihole/pihole:latest
+    networks:
+      - traefik-ext
+    ports:
+      - '0.0.0.0:53:53/tcp'
+      - '0.0.0.0:53:53/udp'
+      # - '0.0.0.0:67:67/udp'
+      # - '443:443/tcp'
+      # Expose port 8053 in case traefik is acting up, so you can still get to the admin console
+      - '0.0.0.0:8053:80/tcp'
+    volumes:
+      - '/storage/pihole/etc/:/etc/pihole/:z'
+      - '/storage/pihole/dnsmasq/:/etc/dnsmasq.d/:z'
+      # run `touch /storage/pihole/logs/pihole.log` first unless you like errors
+      - '/storage/pihole/logs/pihole.log:/var/log/pihole.log:z'
+    environment:
+      ServerIP: <your host IP address>
+      ServerIPv6: <your host IPv6 address>
+      PROXY_LOCATION: pihole
+      VIRTUAL_HOST: pihole.home.example.com
+      VIRTUAL_PORT: 80
+      TZ: 'America/Chicago'
+      WEBPASSWORD: <web-admin-password>
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    labels:
+      # required when using --providers.docker.exposedbydefault=false
+      - "traefik.enable=true"
+      - "traefik.http.routers.pihole.rule=Host(`pihole.home.example.com`)"
+      - "traefik.http.routers.pihole.entrypoints=web"
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+      - "traefik.http.routers.pihole.tls=true"
+      - "traefik.docker.network=discovery"
+      - "traefik.http.routers.pihole-secure.rule=Host(`pihole.home.example.com`)"
+      - "traefik.http.routers.pihole-secure.entrypoints=websecure"
+      - "traefik.http.routers.pihole-secure.tls=true"
+      - "traefik.h:s5ttp.routers.pihole-secure.tls.certresolver=le"
+
+networks:
+  traefik-ext:
+    external: true
